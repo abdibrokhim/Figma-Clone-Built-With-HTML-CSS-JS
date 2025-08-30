@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Figma Clone – Vanilla</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="app">
+      <!-- Left Sidebar -->
+      <aside id="left-sidebar" class="sidebar sidebar--left">
+        <div class="sidebar__header">
+          <button id="figma-logo" class="figma-logo" title="Main menu">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M5.5 0A2.5 2.5 0 0 0 3 2.5v11A2.5 2.5 0 0 0 5.5 16H8V8.5A2.5 2.5 0 1 0 8 3.5V0H5.5Z"/>
+              <circle cx="10.5" cy="5.5" r="2.5"/>
+            </svg>
+          </button>
+          <div class="project-info">
+            <div class="project-name">Startup Pitch Deck Template...</div>
+            <div class="project-meta">
+              <span class="author">ANORA Labs</span>
+              <span class="tag">Free</span>
+            </div>
+          </div>
+          <button class="btn icon small collapse-btn" id="collapse-left" title="Collapse sidebar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left-to-line-icon lucide-arrow-left-to-line"><path d="M3 19V5"/><path d="m13 6-6 6 6 6"/><path d="M7 12h14"/></svg>
+          </button>
+        </div>
+        
+        <div class="sidebar__tabs">
+          <button class="tab-btn active" data-tab="file">File</button>
+          <button class="tab-btn" data-tab="assets">Assets</button>
+          <button id="open-command-palette" class="btn icon search-btn" title="Quick actions (⌘/Ctrl+K)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+          </button>
+        </div>
+
+        <div class="sidebar__content">
+          <div class="sidebar__section">
+            <div class="section-header">
+              <span class="section-title">Pages</span>
+              <button class="btn icon small">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus-icon lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              </button>
+            </div>
+            <ul class="pages" id="pages-list">
+              <li class="page active">
+                <span class="page-icon">★</span>
+                <span class="page-name">Get started</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="sidebar__section layers-section">
+            <div class="section-header">
+              <span class="section-title">Layers</span>
+              <div class="layer-controls">
+                <button class="btn icon small" title="Layer options">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-chevrons-down-up-icon lucide-list-chevrons-down-up"><path d="M3 5h8"/><path d="M3 12h8"/><path d="M3 19h8"/><path d="m15 5 3 3 3-3"/><path d="m15 19 3-3 3 3"/></svg>
+                </button>
+              </div>
+            </div>
+            <ul id="layers-list" class="layers-list">
+              <li class="layer-item selected">
+                <div class="layer-content">
+                  <span class="layer-icon">▭</span>
+                  <span class="layer-name">Rectangle 2414</span>
+                </div>
+              </li>
+              <li class="layer-item expandable">
+                <div class="layer-content">
+                  <button class="expand-btn">
+                    <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor">
+                      <path d="M2 1l3 3-3 3"/>
+                    </svg>
+                  </button>
+                  <span class="layer-icon">▦</span>
+                  <span class="layer-name">Cover</span>
+                </div>
+                <ul class="layer-children">
+                  <li class="layer-item">
+                    <div class="layer-content">
+                      <span class="layer-icon">▦</span>
+                      <span class="layer-name">Frame 4486</span>
+                    </div>
+                  </li>
+                  <li class="layer-item">
+                    <div class="layer-content">
+                      <span class="layer-icon">T</span>
+                      <span class="layer-name">Template</span>
+                    </div>
+                  </li>
+                  <li class="layer-item">
+                    <div class="layer-content">
+                      <span class="layer-icon">T</span>
+                      <span class="layer-name">Startup</span>
+                    </div>
+                  </li>
+                  <li class="layer-item">
+                    <div class="layer-content">
+                      <span class="layer-icon">▦</span>
+                      <span class="layer-name">logo</span>
+                    </div>
+                  </li>
+                  <li class="layer-item">
+                    <div class="layer-content">
+                      <span class="layer-icon">▭</span>
+                      <span class="layer-name">Rectangle 2413</span>
+                    </div>
+                  </li>
+                  <li class="layer-item">
+                    <div class="layer-content">
+                      <span class="layer-icon">⬢</span>
+                      <span class="layer-name">Group 332</span>
+                    </div>
+                  </li>
+                  <li class="layer-item">
+                    <div class="layer-content">
+                      <span class="layer-icon">🖼</span>
+                      <span class="layer-name">image 1</span>
+                    </div>
+                  </li>
+                  <li class="layer-item">
+                    <div class="layer-content">
+                      <span class="layer-icon">◯</span>
+                      <span class="layer-name">Ellipse 175</span>
+                    </div>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Work Area -->
+      <main class="workspace">
+        <div class="topbar">
+          <div class="breadcrumbs">
+            Startup Pitch Deck Template –
+            <span class="tag">Free</span>
+          </div>
+          <div class="spacer"></div>
+          <div class="topbar-controls">
+            <div class="mode-switch">
+              <button class="btn small active">Design</button>
+              <button class="btn small">Prototype</button>
+            </div>
+            <div class="zoom-display" id="zoom-display">100%</div>
+            <button class="btn primary">Share</button>
+          </div>
+        </div>
+
+        <!-- Rulers -->
+        <div class="ruler ruler--top" id="ruler-top"></div>
+        <div class="ruler ruler--left" id="ruler-left"></div>
+
+        <!-- Canvas viewport -->
+        <div id="viewport" class="viewport">
+          <div id="stage-wrapper" class="stage-wrapper">
+            <div id="stage" class="stage" tabindex="0"></div>
+          </div>
+        </div>
+
+        <!-- Floating Left Sidebar Button -->
+        <div class="floating-sidebar-btn floating-left" id="floating-left">
+          <button class="btn icon small expand-btn" id="expand-left" title="Show left sidebar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right-to-line-icon lucide-arrow-right-to-line"><path d="M17 12H3"/><path d="m11 18 6-6-6-6"/><path d="M21 5v14"/></svg>
+          </button>
+        </div>
+
+        <!-- Floating Right Sidebar Button -->
+        <div class="floating-sidebar-btn floating-right" id="floating-right">
+          <button class="btn icon small expand-btn" id="expand-right" title="Show right sidebar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left-to-line-icon lucide-arrow-left-to-line"><path d="M3 19V5"/><path d="m13 6-6 6 6 6"/><path d="M7 12h14"/></svg>
+          </button>
+        </div>
+
+        <!-- Floating Top Controls -->
+        <div class="floating-top-controls" id="floating-top-controls">
+          <div class="floating-project-info">
+            <span class="floating-project-name">Startup Pitch Deck Template</span>
+            <span class="tag">Free</span>
+          </div>
+          <div class="floating-controls">
+            <div class="mode-switch">
+              <button class="btn small active">Design</button>
+              <button class="btn small">Prototype</button>
+            </div>
+            <div class="zoom-display" id="floating-zoom-display">100%</div>
+            <button class="btn primary">Share</button>
+          </div>
+        </div>
+
+        <!-- Bottom Toolbar with Dropdowns -->
+        <div class="toolbar-bottom" id="toolbar">
+          <div class="tool-group">
+            <div class="tool-dropdown" data-tool="select">
+              <button class="tool btn icon active" data-tool="select" title="Move (V)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z"/>
+                </svg>
+              </button>
+              <div class="dropdown-content">
+                <div class="dropdown-item active" data-tool="select">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mouse-pointer2-icon lucide-mouse-pointer-2"><path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z"/></svg>
+                  <span>Move</span>
+                  <span class="shortcut">V</span>
+                </div>
+                <div class="dropdown-item" data-tool="hand">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+                  </svg>
+                  <span>Hand tool</span>
+                  <span class="shortcut">H</span>
+                </div>
+                <div class="dropdown-item" data-tool="scale">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M14 15H9v-5"/><path d="M16 3h5v5"/><path d="M21 3 9 15"/>
+                  </svg>
+                  <span>Scale</span>
+                  <span class="shortcut">K</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tool-group">
+            <div class="tool-dropdown" data-tool="frame">
+              <button class="tool btn icon" data-tool="frame" title="Frame (F)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" x2="2" y1="6" y2="6"/><line x1="22" x2="2" y1="18" y2="18"/><line x1="6" x2="6" y1="2" y2="22"/><line x1="18" x2="18" y1="2" y2="22"/>
+                </svg>
+              </button>
+              <div class="dropdown-content">
+                <div class="dropdown-item active" data-tool="frame">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" x2="2" y1="6" y2="6"/><line x1="22" x2="2" y1="18" y2="18"/><line x1="6" x2="6" y1="2" y2="22"/><line x1="18" x2="18" y1="2" y2="22"/>
+                  </svg>
+                  <span>Frame</span>
+                  <span class="shortcut">F</span>
+                </div>
+                <div class="dropdown-item" data-tool="section">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+                  </svg>
+                  <span>Section</span>
+                  <span class="shortcut">⇧S</span>
+                </div>
+                <div class="dropdown-item" data-tool="slice">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 16.586V19a1 1 0 0 1-1 1H2L18.37 3.63a1 1 0 1 1 3 3l-9.663 9.663a1 1 0 0 1-1.414 0L8 14"/>
+                  </svg>
+                  <span>Slice</span>
+                  <span class="shortcut">S</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tool-group">
+            <div class="tool-dropdown" data-tool="rectangle">
+              <button class="tool btn icon" data-tool="rectangle" title="Rectangle (R)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="18" height="18" x="3" y="3" rx="2"/>
+                </svg>
+              </button>
+              <div class="dropdown-content">
+                <div class="dropdown-item active" data-tool="rectangle">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2"/>
+                  </svg>
+                  <span>Rectangle</span>
+                  <span class="shortcut">R</span>
+                </div>
+                <div class="dropdown-item" data-tool="line">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><path d="M5 17A12 12 0 0 1 17 5"/>
+                  </svg>
+                  <span>Line</span>
+                  <span class="shortcut">L</span>
+                </div>
+                <div class="dropdown-item" data-tool="arrow">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M13 5H19V11"/><path d="M19 5L5 19"/>
+                  </svg>
+                  <span>Arrow</span>
+                  <span class="shortcut">⇧L</span>
+                </div>
+                <div class="dropdown-item" data-tool="ellipse">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                  </svg>
+                  <span>Ellipse</span>
+                  <span class="shortcut">O</span>
+                </div>
+                <div class="dropdown-item" data-tool="polygon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M13.73 4a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                  </svg>
+                  <span>Polygon</span>
+                </div>
+                <div class="dropdown-item" data-tool="star">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>
+                  </svg>
+                  <span>Star</span>
+                </div>
+                <div class="dropdown-item" data-tool="image">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 5h6"/><path d="M19 2v6"/><path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/><circle cx="9" cy="9" r="2"/>
+                  </svg>
+                  <span>Image/video...</span>
+                  <span class="shortcut">⇧⌘K</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tool-group">
+            <div class="tool-dropdown" data-tool="pen">
+              <button class="tool btn icon" data-tool="pen" title="Pen (P)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M15.707 21.293a1 1 0 0 1-1.414 0l-1.586-1.586a1 1 0 0 1 0-1.414l5.586-5.586a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 1 0 1.414z"/><path d="m18 13-1.375-6.874a1 1 0 0 0-.746-.776L3.235 2.028a1 1 0 0 0-1.207 1.207L5.35 15.879a1 1 0 0 0 .776.746L13 18"/><path d="m2.3 2.3 7.286 7.286"/><circle cx="11" cy="11" r="2"/>
+                </svg>
+              </button>
+              <div class="dropdown-content">
+                <div class="dropdown-item active" data-tool="pen">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15.707 21.293a1 1 0 0 1-1.414 0l-1.586-1.586a1 1 0 0 1 0-1.414l5.586-5.586a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 1 0 1.414z"/><path d="m18 13-1.375-6.874a1 1 0 0 0-.746-.776L3.235 2.028a1 1 0 0 0-1.207 1.207L5.35 15.879a1 1 0 0 0 .776.746L13 18"/><path d="m2.3 2.3 7.286 7.286"/><circle cx="11" cy="11" r="2"/>
+                  </svg>
+                  <span>Pen</span>
+                  <span class="shortcut">P</span>
+                </div>
+                <div class="dropdown-item" data-tool="pencil">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>
+                  </svg>
+                  <span>Pencil</span>
+                  <span class="shortcut">⇧P</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tool-group">
+            <button class="tool btn icon" data-tool="text" title="Text (T)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 4v16"/><path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2"/><path d="M9 20h6"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="tool-group">
+            <button class="tool btn icon" data-tool="comment" title="Comment (C)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="tool-group">
+            <button class="tool btn icon" data-tool="components" title="Components">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-command-icon lucide-command"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/></svg>
+            </button>
+          </div>
+
+          <div class="toolbar-divider"></div>
+
+          <div class="tool-group right">
+            <button id="ruler-toggle" class="tool btn icon" title="Toggle rulers">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ruler-icon lucide-ruler"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></svg>
+            </button>
+            <button class="tool btn icon" title="View options">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-container-icon lucide-container"><path d="M22 7.7c0-.6-.4-1.2-.8-1.5l-6.3-3.9a1.72 1.72 0 0 0-1.7 0l-10.3 6c-.5.2-.9.8-.9 1.4v6.6c0 .5.4 1.2.8 1.5l6.3 3.9a1.72 1.72 0 0 0 1.7 0l10.3-6c.5-.3.9-1 .9-1.5Z"/><path d="M10 21.9V14L2.1 9.1"/><path d="m10 14 11.9-6.9"/><path d="M14 19.8v-8.1"/><path d="M18 17.5V9.4"/></svg>
+            </button>
+            <button class="tool btn icon" title="Developer handoff">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code-xml-icon lucide-code-xml"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+            </button>
+          </div>
+        </div>
+      </main>
+
+      <!-- Right Inspector -->
+      <aside id="right-sidebar" class="sidebar sidebar--right">
+        <div class="inspector">
+          <div class="inspector__header">
+            <span class="selected-name" id="selected-name">Rectangle</span>
+            <div class="inspector-controls">
+              <button class="btn icon small" title="Design properties">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-component-icon lucide-component"><path d="M15.536 11.293a1 1 0 0 0 0 1.414l2.376 2.377a1 1 0 0 0 1.414 0l2.377-2.377a1 1 0 0 0 0-1.414l-2.377-2.377a1 1 0 0 0-1.414 0z"/><path d="M2.297 11.293a1 1 0 0 0 0 1.414l2.377 2.377a1 1 0 0 0 1.414 0l2.377-2.377a1 1 0 0 0 0-1.414L6.088 8.916a1 1 0 0 0-1.414 0z"/><path d="M8.916 17.912a1 1 0 0 0 0 1.415l2.377 2.376a1 1 0 0 0 1.414 0l2.377-2.376a1 1 0 0 0 0-1.415l-2.377-2.376a1 1 0 0 0-1.414 0z"/><path d="M8.916 4.674a1 1 0 0 0 0 1.414l2.377 2.376a1 1 0 0 0 1.414 0l2.377-2.376a1 1 0 0 0 0-1.414l-2.377-2.377a1 1 0 0 0-1.414 0z"/></svg>
+              </button>
+              <button class="btn icon small" title="Blend mode">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-blend-icon lucide-blend"><circle cx="9" cy="9" r="7"/><circle cx="15" cy="15" r="7"/></svg>
+              </button>
+              <button class="btn icon small" title="Export">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download-icon lucide-download"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+              </button>
+              <button class="btn icon small" title="More options">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis-icon lucide-ellipsis"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+            <button class="btn icon small collapse-btn" id="collapse-right" title="Collapse sidebar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right-to-line-icon lucide-arrow-right-to-line"><path d="M17 12H3"/><path d="m11 18 6-6-6-6"/><path d="M21 5v14"/></svg>
+            </button>
+          </div>
+
+          <div class="inspector__content">
+            <div class="inspector__section">
+              <div class="section-title">Position</div>
+              <div class="alignment-controls">
+                <button class="btn icon small" title="Align left">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-align-start-vertical-icon lucide-align-start-vertical"><rect width="9" height="6" x="6" y="14" rx="2"/><rect width="16" height="6" x="6" y="4" rx="2"/><path d="M2 2v20"/></svg>
+                </button>
+                <button class="btn icon small" title="Align center horizontally">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-align-center-vertical-icon lucide-align-center-vertical"><path d="M12 2v20"/><path d="M8 10H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2h4"/><path d="M16 10h4a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-4"/><path d="M8 20H7a2 2 0 0 1-2-2v-2c0-1.1.9-2 2-2h1"/><path d="M16 14h1a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-1"/></svg>
+                </button>
+                <button class="btn icon small" title="Align right">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-align-end-vertical-icon lucide-align-end-vertical"><rect width="16" height="6" x="2" y="4" rx="2"/><rect width="9" height="6" x="9" y="14" rx="2"/><path d="M22 22V2"/></svg>
+                </button>
+                <button class="btn icon small" title="Align top">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-align-start-horizontal-icon lucide-align-start-horizontal"><rect width="6" height="16" x="4" y="6" rx="2"/><rect width="6" height="9" x="14" y="6" rx="2"/><path d="M22 2H2"/></svg>
+                </button>
+                <button class="btn icon small" title="Align center vertically">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-align-center-horizontal-icon lucide-align-center-horizontal"><path d="M2 12h20"/><path d="M10 16v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/><path d="M10 8V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v4"/><path d="M20 16v1a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-1"/><path d="M14 8V7c0-1.1.9-2 2-2h2a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+                <button class="btn icon small" title="Align bottom">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-align-end-horizontal-icon lucide-align-end-horizontal"><rect width="6" height="16" x="4" y="2" rx="2"/><rect width="6" height="9" x="14" y="9" rx="2"/><path d="M22 22H2"/></svg>
+                </button>
+              </div>
+              <div class="form-grid">
+                <label>X<input type="number" id="prop-x" step="1" value="-299"></label>
+                <label>Y<input type="number" id="prop-y" step="1" value="1957"></label>
+              </div>
+              <div class="rotation-section">
+                <label class="rotation-label">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-cw-square-icon lucide-rotate-cw-square"><path d="M12 5H6a2 2 0 0 0-2 2v3"/><path d="m9 8 3-3-3-3"/><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg>
+                  <input type="number" id="prop-rotation" step="1" value="0">
+                </label>
+                <div class="rotation-controls">
+                  <button class="btn icon small" title="Flip horizontal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flip-horizontal2-icon lucide-flip-horizontal-2"><path d="m3 7 5 5-5 5V7"/><path d="m21 7-5 5 5 5V7"/><path d="M12 20v2"/><path d="M12 14v2"/><path d="M12 8v2"/><path d="M12 2v2"/></svg>
+                  </button>
+                  <button class="btn icon small" title="Flip vertical">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flip-vertical2-icon lucide-flip-vertical-2"><path d="m17 3-5 5-5-5h10"/><path d="m17 21-5-5-5 5h10"/><path d="M4 12H2"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M22 12h-2"/></svg>
+                  </button>
+                  <button class="btn icon small" title="More transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings2-icon lucide-settings-2"><path d="M14 17H5"/><path d="M19 7h-9"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="inspector__section">
+              <div class="section-title">Layout</div>
+              <div class="form-grid">
+                <label>W<input type="number" id="prop-w" step="1" min="1" value="615"></label>
+                <label>H<input type="number" id="prop-h" step="1" min="1" value="468"></label>
+                <button class="btn icon small constraint-btn" title="Constraints">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                    <path d="M2 2h8v8H2V2zm1 1v6h6V3H3z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="inspector__section">
+              <div class="section-title">Appearance</div>
+              <div class="appearance-controls">
+                <button class="btn icon small" title="Show/hide">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-closed-icon lucide-eye-closed"><path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/></svg>
+                </button>
+                <button class="btn icon small" title="Blend mode">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-blend-icon lucide-blend"><circle cx="9" cy="9" r="7"/><circle cx="15" cy="15" r="7"/></svg>
+                </button>
+              </div>
+              <div class="opacity-section">
+                <label class="opacity-label">
+                  <span>Opacity</span>
+                  <input type="number" id="prop-opacity" step="1" min="0" max="100" value="100">
+                  <span>%</span>
+                </label>
+              </div>
+              <div class="corner-radius-section" id="corner-radius-row">
+                <label class="corner-label">
+                  <span>Corner radius</span>
+                  <div class="corner-controls">
+                    <button class="btn icon small" title="Independent corners">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-frame-icon lucide-frame"><line x1="22" x2="2" y1="6" y2="6"/><line x1="22" x2="2" y1="18" y2="18"/><line x1="6" x2="6" y1="2" y2="22"/><line x1="18" x2="18" y1="2" y2="22"/></svg>
+                    </button>
+                    <input type="number" id="prop-radius" step="1" min="0" value="0">
+                    <button class="btn icon small" title="More corner options">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis-icon lucide-ellipsis"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                    </button>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="inspector__section">
+              <div class="section-header">
+                <span class="section-title">Fill</span>
+                <div class="section-controls">
+                  <button class="btn icon small" title="Swap fill/stroke">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paint-bucket-icon lucide-paint-bucket"><path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"/><path d="m5 2 5 5"/><path d="M2 13h15"/><path d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z"/></svg>
+                  </button>
+                  <button class="btn icon small" title="Add fill">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus-icon lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="fill-control">
+                <div class="color-swatch" style="background-color: #000000;"></div>
+                <input type="color" id="prop-fill" value="#000000">
+                <input type="text" class="hex-input" value="000000">
+                <input type="number" class="opacity-input" value="100" min="0" max="100">
+                <span class="opacity-unit">%</span>
+                <button class="btn icon small" title="Show/hide fill">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-closed-icon lucide-eye-closed"><path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/></svg>
+                </button>
+                <button class="btn icon small" title="Remove fill">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minus-icon lucide-minus"><path d="M5 12h14"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="inspector__section">
+              <div class="section-header">
+                <span class="section-title">Stroke</span>
+                <button class="btn icon small" title="Add stroke">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus-icon lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="inspector__section">
+              <div class="section-header">
+                <span class="section-title">Effects</span>
+                <div class="section-controls">
+                  <button class="btn icon small" title="Blend mode">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-blend-icon lucide-blend"><circle cx="9" cy="9" r="7"/><circle cx="15" cy="15" r="7"/></svg>
+                  </button>
+                  <button class="btn icon small" id="add-effect" title="Add effect">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus-icon lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="effects-list" id="effects-list">
+                <!-- Effects will be added here dynamically -->
+              </div>
+            </div>
+
+            <div class="inspector__section">
+              <div class="section-header">
+                <span class="section-title">Export</span>
+                <button class="btn icon small" id="add-export" title="Add export setting">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus-icon lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                </button>
+              </div>
+              <div class="export-list" id="export-list">
+                <!-- Export settings will be added here dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Command Palette -->
+    <div id="palette" class="palette hidden" role="dialog" aria-modal="true">
+      <div class="palette__search">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" class="search-icon">
+          <path d="M11.5 7a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM15.354 14.646l-3-3a.5.5 0 0 0-.708.708l3 3a.5.5 0 0 0 .708-.708Z"/>
+        </svg>
+        <input id="palette-input" placeholder="Search" aria-label="Search quick actions" />
+      </div>
+      <div class="palette__tabs">
+        <button class="btn small active">All</button>
+        <button class="btn small">Assets</button>
+        <button class="btn small">Plugins & widgets</button>
+      </div>
+      <div class="palette__content">
+        <div class="palette__section">
+          <div class="palette__label">Recents</div>
+          <div class="palette__item">
+            <div class="item-icon">🎨</div>
+            <span>Magical Graphics</span>
+          </div>
+          <div class="palette__item">
+            <div class="item-icon">📐</div>
+            <span>Perspective Toolkit</span>
+          </div>
+          <div class="palette__item">
+            <div class="item-icon">🌀</div>
+            <span>Progressive Blur</span>
+          </div>
+        </div>
+        <div class="palette__section">
+          <div class="palette__label">Suggestions</div>
+          <div class="palette__item">
+            <div class="item-icon">🔍</div>
+            <span>Find and replace...</span>
+          </div>
+          <div class="palette__item">
+            <div class="item-icon">⚪</div>
+            <span>Select all</span>
+            <span class="shortcut">⌘A</span>
+          </div>
+          <div class="palette__item">
+            <div class="item-icon">↶</div>
+            <span>Undo</span>
+            <span class="shortcut">⌘Z</span>
+          </div>
+          <div class="palette__item">
+            <div class="item-icon">📋</div>
+            <span>Copy to Figma Slides</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
