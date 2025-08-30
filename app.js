@@ -775,6 +775,98 @@ class FigmaClone {
     }
   }
 
+  // Zoom Functions
+  setupZoomDropdowns() {
+    // Setup both main and floating zoom dropdowns
+    document.querySelectorAll('.zoom-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        const zoom = parseFloat(e.target.dataset.zoom);
+        const action = e.target.dataset.action;
+        
+        if (zoom) {
+          this.setZoom(zoom);
+        } else if (action === 'fit') {
+          this.zoomToFit();
+        } else if (action === 'selection') {
+          this.zoomToSelection();
+        }
+      });
+    });
+  }
+
+  zoomToFit() {
+    if (this.state.shapes.length === 0) {
+      this.setZoom(1);
+      return;
+    }
+
+    // Calculate bounding box of all shapes
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    this.state.shapes.forEach(shape => {
+      minX = Math.min(minX, shape.x);
+      minY = Math.min(minY, shape.y);
+      maxX = Math.max(maxX, shape.x + shape.w);
+      maxY = Math.max(maxY, shape.y + shape.h);
+    });
+
+    const viewportRect = this.elements.viewport.getBoundingClientRect();
+    const contentWidth = maxX - minX;
+    const contentHeight = maxY - minY;
+    
+    const zoomX = (viewportRect.width * 0.8) / contentWidth;
+    const zoomY = (viewportRect.height * 0.8) / contentHeight;
+    const zoom = Math.min(zoomX, zoomY, 4); // Cap at 400%
+    
+    this.setZoom(Math.max(0.1, zoom));
+    
+    // Center the content
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    const scrollLeft = centerX - viewportRect.width / (2 * this.state.zoom);
+    const scrollTop = centerY - viewportRect.height / (2 * this.state.zoom);
+    
+    this.elements.viewport.scrollLeft = scrollLeft;
+    this.elements.viewport.scrollTop = scrollTop;
+  }
+
+  zoomToSelection() {
+    if (this.state.selectedIds.size === 0) {
+      alert('Please select at least one element');
+      return;
+    }
+
+    const selectedShapes = Array.from(this.state.selectedIds).map(id => this.getShapeById(id)).filter(Boolean);
+    if (selectedShapes.length === 0) return;
+
+    // Calculate bounding box of selected shapes
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    selectedShapes.forEach(shape => {
+      minX = Math.min(minX, shape.x);
+      minY = Math.min(minY, shape.y);
+      maxX = Math.max(maxX, shape.x + shape.w);
+      maxY = Math.max(maxY, shape.y + shape.h);
+    });
+
+    const viewportRect = this.elements.viewport.getBoundingClientRect();
+    const contentWidth = maxX - minX;
+    const contentHeight = maxY - minY;
+    
+    const zoomX = (viewportRect.width * 0.7) / Math.max(contentWidth, 50);
+    const zoomY = (viewportRect.height * 0.7) / Math.max(contentHeight, 50);
+    const zoom = Math.min(zoomX, zoomY, 4); // Cap at 400%
+    
+    this.setZoom(Math.max(0.1, zoom));
+    
+    // Center the selection
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    const scrollLeft = centerX - viewportRect.width / (2 * this.state.zoom);
+    const scrollTop = centerY - viewportRect.height / (2 * this.state.zoom);
+    
+    this.elements.viewport.scrollLeft = scrollLeft;
+    this.elements.viewport.scrollTop = scrollTop;
+  }
+
   // Setup Methods
   setupEventListeners() {
     // Sidebar collapse
@@ -816,6 +908,17 @@ class FigmaClone {
     document.getElementById('add-stroke')?.addEventListener('click', () => this.showStrokeControls());
     document.getElementById('remove-stroke')?.addEventListener('click', () => this.removeStroke());
     document.getElementById('toggle-stroke')?.addEventListener('click', () => this.toggleStroke());
+
+    // Zoom controls
+    document.getElementById('zoom-in')?.addEventListener('click', () => this.setZoom(this.state.zoom + 0.1));
+    document.getElementById('zoom-out')?.addEventListener('click', () => this.setZoom(this.state.zoom - 0.1));
+    document.getElementById('floating-zoom-in')?.addEventListener('click', () => this.setZoom(this.state.zoom + 0.1));
+    document.getElementById('floating-zoom-out')?.addEventListener('click', () => this.setZoom(this.state.zoom - 0.1));
+    document.getElementById('sidebar-zoom-in')?.addEventListener('click', () => this.setZoom(this.state.zoom + 0.1));
+    document.getElementById('sidebar-zoom-out')?.addEventListener('click', () => this.setZoom(this.state.zoom - 0.1));
+    
+    // Zoom dropdown items
+    this.setupZoomDropdowns();
 
     // Command palette
     document.getElementById('open-command-palette')?.addEventListener('click', () => this.togglePalette(true));
@@ -1457,10 +1560,22 @@ class FigmaClone {
 
   updateZoomDisplay() {
     const zoomText = Math.round(this.state.zoom * 100) + '%';
-    this.elements.zoomDisplay.textContent = zoomText;
-    if (this.elements.floatingZoomDisplay) {
-      this.elements.floatingZoomDisplay.textContent = zoomText;
-    }
+    
+    // Update all zoom displays
+    const mainZoom = document.getElementById('zoom-display');
+    if (mainZoom) mainZoom.textContent = zoomText;
+    const floatingZoom = document.getElementById('floating-zoom-display');
+    if (floatingZoom) floatingZoom.textContent = zoomText;
+    const sidebarZoom = document.getElementById('sidebar-zoom-display');
+    if (sidebarZoom) sidebarZoom.textContent = zoomText;
+    
+    // Update active state in zoom dropdowns
+    document.querySelectorAll('.zoom-item').forEach(item => {
+      const zoom = parseFloat(item.dataset.zoom);
+      if (zoom) {
+        item.classList.toggle('active', Math.abs(zoom - this.state.zoom) < 0.01);
+      }
+    });
   }
 
   startPanning(e) {

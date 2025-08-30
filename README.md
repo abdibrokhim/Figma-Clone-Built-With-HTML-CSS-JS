@@ -5,25 +5,40 @@ A fully functional Figma clone built with vanilla HTML, CSS, and JavaScript. Thi
 ## 🎯 Features
 
 ### Core Design Tools
-- **Shape Creation**: Rectangle, Ellipse, Line, Arrow, Polygon, Star
-- **Text Tool**: Fully editable text with live typing
-- **Image Support**: Drag & drop, paste from clipboard, file picker
+- **Shape Creation**: Rectangle, Ellipse, Line, Arrow, Polygon, Star, Path/Pen Tool
+- **Text Tool**: Fully editable text with live typing and in-place editing
+- **Image Support**: Drag & drop, paste from clipboard, file picker, assets gallery
 - **Comments**: Clickable comment system with position persistence
-- **Selection Tools**: Multi-selection, move, resize with corner handles
+- **Selection Tools**: Multi-selection with Shift+click, move, resize with corner handles
 
 ### Advanced Functionality
+- **Multi-Selection**: Hold Shift and click to select multiple elements simultaneously
+- **Alignment Tools**: Comprehensive alignment options for multiple selected elements
+  - Horizontal: Left, Center, Right alignment
+  - Vertical: Top, Center, Bottom alignment
+- **Transform Tools**: Flip horizontal/vertical with visual transforms
+- **Stroke System**: Complete stroke management with color, width, and visibility controls
 - **Effects System**: Drop shadows with full control (X, Y, Blur, Spread, Color, Opacity)
-- **Export System**: PNG export with real-time preview
+- **Export System**: PNG export with real-time preview and canvas rendering
 - **Infinite Canvas**: Smooth pan and zoom in all directions
-- **Collapsible Sidebars**: Space-efficient workspace management
-- **Floating UI**: Dynamic floating controls when sidebars are collapsed
+- **Advanced Zoom**: Comprehensive zoom controls with preset values (10%-400%)
+  - Zoom to fit all content
+  - Zoom to selection
+  - Dropdown with common zoom levels
+- **Pages Management**: Multiple design pages with switching and deletion
+- **Assets Gallery**: Dedicated image library with upload, preview, and reuse functionality
+- **Dynamic Search**: Real-time search with highlighting and focusing on canvas elements
 
 ### Professional UI/UX
+- **Clean Header Design**: Minimalist top area with only rulers when sidebars are open
+- **Reorganized Controls**: Design/Prototype/Zoom/Share moved to right sidebar for cleaner workflow
+- **Project Title Section**: Dedicated area below Figma icon for better organization
 - **Figma-Accurate Design**: Pixel-perfect recreation of Figma's interface
 - **Dark Theme**: Professional dark color scheme
 - **Lucide Icons**: High-quality SVG icons throughout
 - **Smooth Animations**: Polished transitions and micro-interactions
 - **Glass Morphism**: Modern backdrop blur effects
+- **Responsive Design**: Adaptive layout with collapsible sidebars and floating controls
 
 ## 📸 Screenshots
 
@@ -84,18 +99,27 @@ open index.html
 - **Comment**: Click to place comments
 
 ### Shape Manipulation
-- **Move**: Select and drag shapes
-- **Resize**: Drag corner handles to resize
+- **Move**: Select and drag shapes, or use Shift+click for multi-selection
+- **Resize**: Drag corner handles to resize selected shapes
 - **Properties**: Use right sidebar to adjust X, Y, Width, Height
-- **Styling**: Change fill color, stroke, opacity, rotation
+- **Styling**: Change fill color, stroke (width, color, visibility), opacity, rotation
+- **Transform**: Use flip horizontal/vertical buttons in inspector
+- **Alignment**: Use alignment tools for precise positioning of multiple elements
 - **Effects**: Add drop shadows with full control
 
 ### Advanced Features
+- **Multi-Selection**: Hold Shift and click to select multiple elements
+- **Alignment**: Select multiple elements and use alignment buttons
+- **Transform**: Use flip controls to mirror elements horizontally or vertically
+- **Stroke Management**: Add, customize, and toggle stroke visibility
 - **Effects**: Click + in Effects panel to add drop shadows
 - **Export**: Click + in Export panel to export as PNG
-- **Images**: Drag & drop images or use image tool
+- **Images**: Drag & drop images, use image tool, or browse assets gallery
 - **Comments**: Click comment tool, then click on canvas
-- **Zoom**: Ctrl/Cmd + scroll to zoom, or use zoom controls
+- **Zoom**: Comprehensive zoom controls with presets (10%-400%)
+- **Pages**: Create multiple design pages and switch between them
+- **Assets**: Upload and manage images in dedicated assets gallery
+- **Search**: Real-time search with dynamic highlighting and focusing
 
 ## ⌨️ Keyboard Shortcuts
 
@@ -111,11 +135,21 @@ open index.html
 
 ### Actions
 - `Cmd/Ctrl + K` or `/` - Open command palette
+- `Shift + Click` - Multi-select elements
 - `Delete/Backspace` - Delete selected shapes
 - `Cmd/Ctrl + +` - Zoom in
 - `Cmd/Ctrl + -` - Zoom out
-- `Cmd/Ctrl + 0` - Reset zoom
-- `Escape` - Clear selection
+- `Cmd/Ctrl + 0` - Reset zoom to 100%
+- `Escape` - Clear selection or close dialogs
+
+### New Features
+- **Zoom to Fit** - Available in zoom dropdown
+- **Zoom to Selection** - Available in zoom dropdown  
+- **Alignment Tools** - Use buttons in right sidebar Position section
+- **Flip Tools** - Use buttons in right sidebar Transform section
+- **Stroke Controls** - Add/remove/customize in right sidebar Stroke section
+- **Assets Gallery** - Switch to Assets tab in left sidebar
+- **Dynamic Search** - Click search icon in left sidebar Pages section
 
 ## 🏗️ Technical Architecture
 
@@ -142,11 +176,16 @@ figma-clone/
 ```javascript
 this.state = {
   tool: 'select',           // Current active tool
-  zoom: 1,                  // Canvas zoom level
+  zoom: 1,                  // Canvas zoom level (0.1 to 4.0)
   shapes: [],               // All shapes on canvas
-  comments: [],             // All comments
-  selectedIds: new Set(),   // Currently selected shapes
-  effects: [],              // Applied effects
+  comments: [],             // All comments  
+  selectedIds: new Set(),   // Currently selected shapes (multi-selection)
+  pages: [],                // Multiple design pages
+  currentPageId: null,      // Active page identifier
+  assets: [],               // Image assets gallery
+  activeTab: 'file',        // Active sidebar tab (file/assets)
+  leftSidebarCollapsed: false,
+  rightSidebarCollapsed: false,
   // ... more state
 }
 ```
@@ -166,9 +205,14 @@ this.state = {
 ## 🎛️ Component Breakdown
 
 ### Left Sidebar
-- **Pages**: Project page management
-- **Layers**: Hierarchical shape listing with icons
-- **Search**: Quick layer finding
+- **Figma Icon**: Clean, minimal branding
+- **Project Title**: Dedicated section below icon with project name and metadata
+- **File Tab**: 
+  - **Pages**: Project page management with search functionality
+  - **Layers**: Hierarchical shape listing with icons and visibility controls
+- **Assets Tab**: 
+  - **Image Gallery**: Upload, preview, and reuse images
+  - **Asset Management**: Organized library with delete and clear functions
 
 ### Main Canvas
 - **Infinite Scroll**: 10000x10000px virtual canvas
@@ -177,13 +221,15 @@ this.state = {
 - **Selection System**: Multi-shape selection with handles
 
 ### Right Sidebar (Inspector)
-- **Position**: X, Y coordinates with alignment tools
-- **Layout**: Width, height, rotation controls
-- **Appearance**: Opacity, corner radius, visibility
-- **Fill**: Color picker with opacity control
-- **Stroke**: Border styling options
-- **Effects**: Drop shadow configuration
-- **Export**: PNG export with preview
+- **Top Controls**: Design/Prototype mode switch, zoom controls, Share button
+- **Position**: X, Y coordinates with 6 alignment tools (left, center-h, right, top, center-v, bottom)
+- **Layout**: Width, height, constraints controls
+- **Transform**: Rotation controls with flip horizontal/vertical buttons
+- **Appearance**: Opacity, corner radius, visibility toggles
+- **Fill**: Color picker with hex input and opacity control
+- **Stroke**: Complete stroke management (add, color, width, visibility, remove)
+- **Effects**: Drop shadow configuration with full controls
+- **Export**: PNG export with real-time preview
 
 ### Bottom Toolbar
 - **Tool Groups**: Organized tool categories
