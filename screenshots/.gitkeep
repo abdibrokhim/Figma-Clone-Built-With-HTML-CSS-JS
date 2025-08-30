@@ -1,0 +1,21 @@
+# Screenshots Directory
+
+This directory contains screenshots showcasing the Figma clone features.
+
+## Screenshot Files:
+
+- `main-interface.png` - Overall application interface
+- `shape-tools.png` - Shape creation and manipulation tools
+- `effects-panel.png` - Effects system with drop shadows
+- `export-feature.png` - Export functionality with preview
+- `text-editing.png` - Text tool and editing capabilities
+- `comments-system.png` - Comment placement and management
+- `collapsed-sidebars.png` - Floating UI when sidebars are collapsed
+
+## How to Add Screenshots:
+
+1. Take screenshots of the application features
+2. Save them with the corresponding filenames
+3. Ensure images are high quality (preferably 1920x1080 or higher)
+4. Use PNG format for best quality
+5. Update README.md if adding new screenshots
