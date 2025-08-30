@@ -80,6 +80,12 @@ class FigmaClone {
       leftSidebarCollapsed: false,
       rightSidebarCollapsed: false,
       showRulers: true,
+      currentPath: null,
+      isDrawing: false,
+      pages: [],
+      currentPageId: null,
+      assets: [],
+      activeTab: 'file',
     };
 
     this.elements = {
@@ -103,6 +109,8 @@ class FigmaClone {
       floatingTopControls: document.getElementById('floating-top-controls'),
       effectsList: document.getElementById('effects-list'),
       exportList: document.getElementById('export-list'),
+      pagesList: document.getElementById('pages-list'),
+      assetsGallery: document.getElementById('assets-gallery'),
     };
 
     this.inspectorInputs = {
@@ -118,6 +126,13 @@ class FigmaClone {
       rotation: document.getElementById('prop-rotation'),
     };
 
+    this.strokeElements = {
+      control: document.getElementById('stroke-control'),
+      swatch: document.getElementById('stroke-swatch'),
+      hex: document.getElementById('stroke-hex'),
+      toggle: document.getElementById('toggle-stroke'),
+    };
+
     this.init();
   }
 
@@ -131,6 +146,7 @@ class FigmaClone {
     this.setTool('select');
     this.setupInfiniteCanvas();
     this.loadFromLocalStorage();
+    this.refreshPages();
   }
 
   // Utility Functions
@@ -146,6 +162,619 @@ class FigmaClone {
     };
   }
 
+  // Pages Management
+  addPage() {
+    const pageName = prompt('Enter page name:', `Page ${this.state.pages.length + 1}`);
+    if (!pageName) return;
+
+    const page = {
+      id: this.uid(),
+      name: pageName,
+      shapes: [],
+      comments: [],
+      created: new Date().toISOString()
+    };
+
+    this.state.pages.push(page);
+    this.refreshPages();
+    this.switchToPage(page.id);
+    this.saveToLocalStorage();
+  }
+
+  switchToPage(pageId) {
+    if (pageId === this.state.currentPageId) return;
+
+    // Save current page data
+    if (this.state.currentPageId) {
+      const currentPage = this.state.pages.find(p => p.id === this.state.currentPageId);
+      if (currentPage) {
+        currentPage.shapes = [...this.state.shapes];
+        currentPage.comments = [...this.state.comments];
+      }
+    }
+
+    // Switch to new page
+    this.state.currentPageId = pageId;
+    const newPage = this.state.pages.find(p => p.id === pageId);
+    
+    if (newPage) {
+      // Clear current stage
+      this.elements.stage.innerHTML = '';
+      
+      // Load new page data
+      this.state.shapes = [...newPage.shapes];
+      this.state.comments = [...newPage.comments];
+      
+      // Render new page
+      this.state.shapes.forEach(shape => this.renderShape(shape));
+      this.state.comments.forEach(comment => this.renderComment(comment));
+      
+      this.clearSelection();
+      this.refreshLayers();
+      this.refreshPages();
+      this.saveToLocalStorage();
+    }
+  }
+
+  refreshPages() {
+    if (!this.elements.pagesList) return;
+    
+    this.elements.pagesList.innerHTML = '';
+    
+    this.state.pages.forEach(page => {
+      const li = document.createElement('li');
+      li.className = 'page';
+      if (page.id === this.state.currentPageId) {
+        li.classList.add('active');
+      }
+      
+      li.innerHTML = `
+        <div class="page-info">
+          <span class="page-icon">📄</span>
+          <span class="page-name">${page.name}</span>
+        </div>
+        <button class="page-delete-btn" data-page-id="${page.id}" title="Delete page">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      `;
+      
+      // Add click event for page switching
+      const pageInfo = li.querySelector('.page-info');
+      pageInfo.addEventListener('click', () => this.switchToPage(page.id));
+      
+      // Add delete button event
+      const deleteBtn = li.querySelector('.page-delete-btn');
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.deletePage(page.id);
+      });
+      
+      this.elements.pagesList.appendChild(li);
+    });
+  }
+
+  deletePage(pageId) {
+    if (this.state.pages.length <= 1) {
+      alert('Cannot delete the last page');
+      return;
+    }
+
+    if (confirm('Are you sure you want to delete this page?')) {
+      const index = this.state.pages.findIndex(p => p.id === pageId);
+      if (index !== -1) {
+        this.state.pages.splice(index, 1);
+        
+        // If we're deleting the current page, switch to the first page
+        if (pageId === this.state.currentPageId) {
+          this.switchToPage(this.state.pages[0].id);
+        } else {
+          this.refreshPages();
+          this.saveToLocalStorage();
+        }
+      }
+    }
+  }
+
+  searchPages() {
+    this.showSearchInterface();
+  }
+
+  showSearchInterface() {
+    // Create search overlay
+    const searchOverlay = document.createElement('div');
+    searchOverlay.className = 'search-overlay';
+    searchOverlay.innerHTML = `
+      <div class="search-modal">
+        <div class="search-header">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+          <input type="text" placeholder="Search elements on canvas..." class="search-input" id="dynamic-search-input">
+          <button class="search-close" id="close-search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <div class="search-results" id="search-results">
+          <div class="search-hint">Type to search elements by name, type, or content...</div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(searchOverlay);
+
+    const searchInput = document.getElementById('dynamic-search-input');
+    const closeBtn = document.getElementById('close-search');
+    const resultsContainer = document.getElementById('search-results');
+
+    // Focus the input
+    searchInput.focus();
+
+    // Real-time search
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase().trim();
+      this.performDynamicSearch(searchTerm, resultsContainer);
+    });
+
+    // Close handlers
+    const closeSearch = () => {
+      searchOverlay.remove();
+      this.clearSearchHighlight();
+    };
+
+    closeBtn.addEventListener('click', closeSearch);
+    searchOverlay.addEventListener('click', (e) => {
+      if (e.target === searchOverlay) closeSearch();
+    });
+
+    // Escape key to close
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        closeSearch();
+        document.removeEventListener('keydown', handleEscape);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+  }
+
+  performDynamicSearch(searchTerm, resultsContainer) {
+    if (!searchTerm) {
+      resultsContainer.innerHTML = '<div class="search-hint">Type to search elements by name, type, or content...</div>';
+      this.clearSearchHighlight();
+      return;
+    }
+
+    // Find matching elements
+    const matchingShapes = this.state.shapes.filter(shape => {
+      return (
+        shape.type.toLowerCase().includes(searchTerm) ||
+        (shape.text && shape.text.toLowerCase().includes(searchTerm)) ||
+        shape.id.toLowerCase().includes(searchTerm)
+      );
+    });
+
+    // Update results display
+    if (matchingShapes.length === 0) {
+      resultsContainer.innerHTML = `<div class="search-no-results">No elements found matching "${searchTerm}"</div>`;
+      this.clearSearchHighlight();
+    } else {
+      resultsContainer.innerHTML = `
+        <div class="search-count">${matchingShapes.length} element(s) found</div>
+        <div class="search-items">
+          ${matchingShapes.map(shape => `
+            <div class="search-item" data-shape-id="${shape.id}">
+              <span class="search-item-icon">${this.getShapeIcon(shape.type)}</span>
+              <div class="search-item-info">
+                <div class="search-item-name">${shape.type.charAt(0).toUpperCase() + shape.type.slice(1)} ${shape.id}</div>
+                ${shape.text ? `<div class="search-item-text">"${shape.text}"</div>` : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      // Add click handlers for search items
+      const searchItems = resultsContainer.querySelectorAll('.search-item');
+      searchItems.forEach(item => {
+        item.addEventListener('click', () => {
+          const shapeId = item.dataset.shapeId;
+          this.selectOnly(shapeId);
+          this.focusOnShape(shapeId);
+        });
+      });
+
+      // Highlight matching shapes
+      const matchingIds = new Set(matchingShapes.map(s => s.id));
+      this.highlightSearchResults(matchingIds);
+    }
+  }
+
+  highlightSearchResults(shapeIds) {
+    // Clear previous highlights
+    this.clearSearchHighlight();
+    
+    // Add search highlight to matching shapes
+    shapeIds.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.classList.add('search-highlighted');
+      }
+    });
+  }
+
+  clearSearchHighlight() {
+    document.querySelectorAll('.search-highlighted').forEach(el => {
+      el.classList.remove('search-highlighted');
+    });
+  }
+
+  focusOnShape(shapeId) {
+    const shape = this.getShapeById(shapeId);
+    if (!shape) return;
+
+    // Center the viewport on the shape
+    const centerX = shape.x + shape.w / 2;
+    const centerY = shape.y + shape.h / 2;
+    
+    const viewportRect = this.elements.viewport.getBoundingClientRect();
+    const scrollLeft = centerX - viewportRect.width / (2 * this.state.zoom);
+    const scrollTop = centerY - viewportRect.height / (2 * this.state.zoom);
+    
+    this.elements.viewport.scrollLeft = scrollLeft;
+    this.elements.viewport.scrollTop = scrollTop;
+  }
+
+  filterCanvasElements(searchTerm) {
+    // Clear current selection
+    this.clearSelection();
+    
+    // Find matching elements
+    const matchingShapes = this.state.shapes.filter(shape => {
+      return (
+        shape.type.toLowerCase().includes(searchTerm) ||
+        (shape.text && shape.text.toLowerCase().includes(searchTerm)) ||
+        shape.id.toLowerCase().includes(searchTerm)
+      );
+    });
+
+    if (matchingShapes.length === 0) {
+      alert(`No elements found matching "${searchTerm}"`);
+      return;
+    }
+
+    // Highlight matching shapes
+    const matchingIds = new Set(matchingShapes.map(s => s.id));
+    this.state.selectedIds = matchingIds;
+    this.updateSelectionUI();
+    this.bindInspector();
+    this.refreshLayers();
+
+    // Show results
+    alert(`Found ${matchingShapes.length} element(s) matching "${searchTerm}"`);
+  }
+
+  // Tab System
+  setupTabSystem() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabName = btn.dataset.tab;
+        this.switchTab(tabName);
+      });
+    });
+  }
+
+  switchTab(tabName) {
+    // Update active tab state
+    this.state.activeTab = tabName;
+    
+    // Update tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    
+    // Update tab content
+    document.querySelectorAll('.tab-content').forEach(content => {
+      content.classList.toggle('active', content.dataset.tabContent === tabName);
+    });
+    
+    // Refresh content if switching to assets
+    if (tabName === 'assets') {
+      this.refreshAssetsGallery();
+    }
+  }
+
+  // Assets Management
+  uploadAsset() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = true;
+    input.onchange = (e) => {
+      const files = Array.from(e.target.files);
+      files.forEach(file => this.addAsset(file));
+    };
+    input.click();
+  }
+
+  addAsset(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const asset = {
+        id: this.uid(),
+        name: file.name,
+        src: e.target.result,
+        size: file.size,
+        type: file.type,
+        created: new Date().toISOString()
+      };
+      
+      this.state.assets.push(asset);
+      this.refreshAssetsGallery();
+      this.saveToLocalStorage();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearAssets() {
+    if (this.state.assets.length === 0) return;
+    
+    if (confirm('Are you sure you want to clear all assets? This cannot be undone.')) {
+      this.state.assets = [];
+      this.refreshAssetsGallery();
+      this.saveToLocalStorage();
+    }
+  }
+
+  refreshAssetsGallery() {
+    if (!this.elements.assetsGallery) return;
+    
+    if (this.state.assets.length === 0) {
+      this.elements.assetsGallery.innerHTML = `
+        <div class="assets-empty">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image-icon lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+          <p>No images yet</p>
+          <small>Upload images to see them here</small>
+        </div>
+      `;
+    } else {
+      this.elements.assetsGallery.innerHTML = `
+        <div class="assets-grid">
+          ${this.state.assets.map(asset => `
+            <div class="asset-item" data-asset-id="${asset.id}">
+              <img src="${asset.src}" alt="${asset.name}" loading="lazy">
+              <div class="asset-item-overlay">
+                <div>Click to use</div>
+              </div>
+              <div class="asset-item-actions">
+                <button class="asset-action-btn" data-action="delete" data-asset-id="${asset.id}" title="Delete">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-icon lucide-trash"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      
+      // Add event listeners for asset items
+      this.elements.assetsGallery.addEventListener('click', (e) => {
+        const assetItem = e.target.closest('.asset-item');
+        const actionBtn = e.target.closest('.asset-action-btn');
+        
+        if (actionBtn) {
+          e.stopPropagation();
+          const assetId = actionBtn.dataset.assetId;
+          const action = actionBtn.dataset.action;
+          
+          if (action === 'delete') {
+            this.deleteAsset(assetId);
+          }
+        } else if (assetItem) {
+          const assetId = assetItem.dataset.assetId;
+          this.useAsset(assetId);
+        }
+      });
+    }
+  }
+
+  deleteAsset(assetId) {
+    const index = this.state.assets.findIndex(a => a.id === assetId);
+    if (index !== -1) {
+      this.state.assets.splice(index, 1);
+      this.refreshAssetsGallery();
+      this.saveToLocalStorage();
+    }
+  }
+
+  useAsset(assetId) {
+    const asset = this.state.assets.find(a => a.id === assetId);
+    if (!asset) return;
+    
+    // Create an image shape from the asset
+    const shape = {
+      type: 'image',
+      x: 100 + Math.random() * 200, // Random position
+      y: 100 + Math.random() * 200,
+      w: 150,
+      h: 150,
+      fill: '#000000',
+      stroke: '#000000',
+      strokeW: 0,
+      radius: 0,
+      opacity: 100,
+      rotation: 0,
+      effects: [],
+      src: asset.src,
+      visible: true,
+    };
+    
+    this.addShape(shape);
+    this.selectOnly(shape.id);
+    this.saveToLocalStorage();
+    
+    // Switch back to file tab to see the result
+    this.switchTab('file');
+  }
+
+  populateAssetsFromImages() {
+    // Look for image shapes and add them to assets if they have a src
+    const imageShapes = this.state.shapes.filter(shape => 
+      shape.type === 'image' && shape.src && !this.state.assets.find(asset => asset.src === shape.src)
+    );
+    
+    imageShapes.forEach(shape => {
+      const asset = {
+        id: this.uid(),
+        name: `Image_${shape.id}`,
+        src: shape.src,
+        type: 'image/*',
+        created: new Date().toISOString()
+      };
+      this.state.assets.push(asset);
+    });
+    
+    if (imageShapes.length > 0) {
+      this.saveToLocalStorage();
+    }
+  }
+
+  // Alignment Functions
+  alignShapes(alignment) {
+    if (this.state.selectedIds.size < 2) {
+      alert('Please select at least 2 elements to align');
+      return;
+    }
+
+    const selectedShapes = Array.from(this.state.selectedIds).map(id => this.getShapeById(id)).filter(Boolean);
+    if (selectedShapes.length < 2) return;
+
+    // Calculate bounding box of all selected shapes
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    selectedShapes.forEach(shape => {
+      minX = Math.min(minX, shape.x);
+      minY = Math.min(minY, shape.y);
+      maxX = Math.max(maxX, shape.x + shape.w);
+      maxY = Math.max(maxY, shape.y + shape.h);
+    });
+
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+
+    selectedShapes.forEach(shape => {
+      switch (alignment) {
+        case 'left':
+          shape.x = minX;
+          break;
+        case 'center-h':
+          shape.x = centerX - shape.w / 2;
+          break;
+        case 'right':
+          shape.x = maxX - shape.w;
+          break;
+        case 'top':
+          shape.y = minY;
+          break;
+        case 'center-v':
+          shape.y = centerY - shape.h / 2;
+          break;
+        case 'bottom':
+          shape.y = maxY - shape.h;
+          break;
+      }
+      this.renderShape(shape);
+    });
+
+    this.bindInspector();
+    this.saveToLocalStorage();
+  }
+
+  // Flip Functions
+  flipShapes(direction) {
+    if (this.state.selectedIds.size === 0) {
+      alert('Please select at least 1 element to flip');
+      return;
+    }
+
+    const selectedShapes = Array.from(this.state.selectedIds).map(id => this.getShapeById(id)).filter(Boolean);
+    
+    selectedShapes.forEach(shape => {
+      if (direction === 'horizontal') {
+        // Add or toggle horizontal flip transform
+        shape.flipH = !shape.flipH;
+      } else if (direction === 'vertical') {
+        // Add or toggle vertical flip transform
+        shape.flipV = !shape.flipV;
+      }
+      this.renderShape(shape);
+    });
+
+    this.saveToLocalStorage();
+  }
+
+  // Stroke Functions
+  showStrokeControls() {
+    const shape = this.getSelectedShape();
+    if (!shape) {
+      alert('Please select an element to add stroke');
+      return;
+    }
+
+    // Show stroke controls
+    if (this.strokeElements.control) {
+      this.strokeElements.control.style.display = 'flex';
+    }
+
+    // Initialize stroke if not present
+    if (!shape.strokeW || shape.strokeW === 0) {
+      shape.strokeW = 1;
+      shape.stroke = shape.stroke || '#000000';
+    }
+
+    this.renderShape(shape);
+    this.bindInspector();
+    this.saveToLocalStorage();
+  }
+
+  removeStroke() {
+    const selectedShapes = Array.from(this.state.selectedIds).map(id => this.getShapeById(id)).filter(Boolean);
+    
+    selectedShapes.forEach(shape => {
+      shape.strokeW = 0;
+      this.renderShape(shape);
+    });
+
+    // Hide stroke controls if no stroke
+    if (this.strokeElements.control) {
+      this.strokeElements.control.style.display = 'none';
+    }
+
+    this.bindInspector();
+    this.saveToLocalStorage();
+  }
+
+  toggleStroke() {
+    const selectedShapes = Array.from(this.state.selectedIds).map(id => this.getShapeById(id)).filter(Boolean);
+    
+    selectedShapes.forEach(shape => {
+      if (shape.strokeW > 0) {
+        shape.strokeVisible = !shape.strokeVisible;
+      }
+      this.renderShape(shape);
+    });
+
+    this.saveToLocalStorage();
+  }
+
+  updateStrokeControls() {
+    const shape = this.getSelectedShape();
+    
+    if (!shape || !this.strokeElements.control) return;
+    
+    // Show/hide stroke controls based on whether shape has stroke
+    if (shape.strokeW && shape.strokeW > 0) {
+      this.strokeElements.control.style.display = 'flex';
+    } else {
+      this.strokeElements.control.style.display = 'none';
+    }
+  }
+
   // Setup Methods
   setupEventListeners() {
     // Sidebar collapse
@@ -159,6 +788,34 @@ class FigmaClone {
     // Effects and Export
     document.getElementById('add-effect')?.addEventListener('click', () => this.addEffect());
     document.getElementById('add-export')?.addEventListener('click', () => this.addExport());
+
+    // Pages
+    document.getElementById('add-page')?.addEventListener('click', () => this.addPage());
+    document.getElementById('search-pages')?.addEventListener('click', () => this.searchPages());
+
+    // Assets
+    document.getElementById('upload-asset')?.addEventListener('click', () => this.uploadAsset());
+    document.getElementById('clear-assets')?.addEventListener('click', () => this.clearAssets());
+
+    // Tab system
+    this.setupTabSystem();
+
+    // Alignment controls
+    document.getElementById('align-left')?.addEventListener('click', () => this.alignShapes('left'));
+    document.getElementById('align-center-h')?.addEventListener('click', () => this.alignShapes('center-h'));
+    document.getElementById('align-right')?.addEventListener('click', () => this.alignShapes('right'));
+    document.getElementById('align-top')?.addEventListener('click', () => this.alignShapes('top'));
+    document.getElementById('align-center-v')?.addEventListener('click', () => this.alignShapes('center-v'));
+    document.getElementById('align-bottom')?.addEventListener('click', () => this.alignShapes('bottom'));
+
+    // Flip controls
+    document.getElementById('flip-horizontal')?.addEventListener('click', () => this.flipShapes('horizontal'));
+    document.getElementById('flip-vertical')?.addEventListener('click', () => this.flipShapes('vertical'));
+
+    // Stroke controls
+    document.getElementById('add-stroke')?.addEventListener('click', () => this.showStrokeControls());
+    document.getElementById('remove-stroke')?.addEventListener('click', () => this.removeStroke());
+    document.getElementById('toggle-stroke')?.addEventListener('click', () => this.toggleStroke());
 
     // Command palette
     document.getElementById('open-command-palette')?.addEventListener('click', () => this.togglePalette(true));
@@ -228,7 +885,12 @@ class FigmaClone {
     this.elements.toolbar.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-tool]');
       if (btn && !btn.closest('.dropdown-content')) {
-        this.setTool(btn.dataset.tool);
+        if (btn.dataset.tool === 'components') {
+          // Open command palette instead of setting tool
+          this.togglePalette(true);
+        } else {
+          this.setTool(btn.dataset.tool);
+        }
       }
     });
   }
@@ -240,6 +902,20 @@ class FigmaClone {
         input.addEventListener('input', () => this.updateSelectedShape());
       }
     });
+
+    // Bind stroke hex input
+    if (this.strokeElements.hex) {
+      this.strokeElements.hex.addEventListener('input', (e) => {
+        const hex = '#' + e.target.value;
+        if (this.inspectorInputs.stroke) {
+          this.inspectorInputs.stroke.value = hex;
+        }
+        if (this.strokeElements.swatch) {
+          this.strokeElements.swatch.style.backgroundColor = hex;
+        }
+        this.updateSelectedShape();
+      });
+    }
   }
 
   setupInfiniteCanvas() {
@@ -323,6 +999,7 @@ class FigmaClone {
       ellipse: 'crosshair',
       line: 'crosshair',
       pen: 'crosshair',
+      pencil: 'crosshair',
       text: 'text',
     };
     this.elements.stage.style.cursor = cursors[this.state.tool] || 'default';
@@ -395,11 +1072,20 @@ class FigmaClone {
       if (!shape.src) {
         el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;font-size:12px;">Drop image here</div>';
       }
+    } else if (shape.type === 'path') {
+      el.style.background = 'transparent';
+      el.innerHTML = this.createPathSVG(shape);
     }
 
     // Stroke
-    if (shape.strokeW > 0 && shape.type !== 'line') {
-      el.style.border = `${shape.strokeW}px solid ${shape.stroke || '#000000'}`;
+    if (shape.strokeW > 0 && shape.type !== 'line' && shape.type !== 'path') {
+      if (shape.strokeVisible !== false) {
+        el.style.border = `${shape.strokeW}px solid ${shape.stroke || '#000000'}`;
+      } else {
+        el.style.border = 'none';
+      }
+    } else {
+      el.style.border = 'none';
     }
 
     // Opacity
@@ -407,13 +1093,32 @@ class FigmaClone {
       el.style.opacity = shape.opacity / 100;
     }
 
-    // Rotation
+    // Transform (rotation and flip)
+    let transforms = [];
     if (shape.rotation) {
-      el.style.transform = `rotate(${shape.rotation}deg)`;
+      transforms.push(`rotate(${shape.rotation}deg)`);
+    }
+    if (shape.flipH) {
+      transforms.push(`scaleX(-1)`);
+    }
+    if (shape.flipV) {
+      transforms.push(`scaleY(-1)`);
+    }
+    if (transforms.length > 0) {
+      el.style.transform = transforms.join(' ');
+    } else {
+      el.style.transform = '';
     }
 
     // Effects
     this.applyEffects(el, shape.effects || []);
+
+    // Visibility
+    if (shape.visible === false) {
+      el.style.display = 'none';
+    } else {
+      el.style.display = 'block';
+    }
 
     el.dataset.type = shape.type;
   }
@@ -498,6 +1203,8 @@ class FigmaClone {
       this.createTextShape(point);
     } else if (this.state.tool === 'comment') {
       this.createComment(point);
+    } else if (this.state.tool === 'pen' || this.state.tool === 'pencil') {
+      this.startDrawing(point, this.state.tool);
     } else if (['rectangle', 'ellipse', 'line', 'arrow', 'polygon', 'star'].includes(this.state.tool)) {
       const shape = {
         type: this.state.tool,
@@ -529,7 +1236,13 @@ class FigmaClone {
 
   onShapeMouseDown(e, id) {
     e.stopPropagation();
-    this.selectOnly(id);
+    
+    // Multi-selection with shift key
+    if (e.shiftKey) {
+      this.toggleSelection(id);
+    } else {
+      this.selectOnly(id);
+    }
     
     const point = this.stagePoint(e);
     const shape = this.getShapeById(id);
@@ -541,6 +1254,17 @@ class FigmaClone {
       mode: 'move',
       targetId: id,
     };
+  }
+
+  toggleSelection(id) {
+    if (this.state.selectedIds.has(id)) {
+      this.state.selectedIds.delete(id);
+    } else {
+      this.state.selectedIds.add(id);
+    }
+    this.updateSelectionUI();
+    this.bindInspector();
+    this.refreshLayers();
   }
 
   onHandleMouseDown(e, id, pos) {
@@ -558,6 +1282,11 @@ class FigmaClone {
   }
 
   onMouseMove(e) {
+    if (this.state.isDrawing) {
+      this.continueDrawing(this.stagePoint(e));
+      return;
+    }
+    
     if (!this.state.dragging.active) return;
     
     const shape = this.getShapeById(this.state.dragging.targetId);
@@ -568,8 +1297,33 @@ class FigmaClone {
     if (this.state.dragging.mode === 'move') {
       const dx = point.x - this.state.dragging.start.x;
       const dy = point.y - this.state.dragging.start.y;
-      shape.x = Math.round(this.state.dragging.origin.x + dx);
-      shape.y = Math.round(this.state.dragging.origin.y + dy);
+      
+      // Move all selected shapes
+      this.state.selectedIds.forEach(selectedId => {
+        const selectedShape = this.getShapeById(selectedId);
+        if (selectedShape) {
+          if (selectedId === this.state.dragging.targetId) {
+            selectedShape.x = Math.round(this.state.dragging.origin.x + dx);
+            selectedShape.y = Math.round(this.state.dragging.origin.y + dy);
+          } else {
+            // Store original positions for other selected shapes if not already stored
+            if (!this.state.dragging.origins) {
+              this.state.dragging.origins = new Map();
+              this.state.selectedIds.forEach(id => {
+                const s = this.getShapeById(id);
+                if (s) this.state.dragging.origins.set(id, { x: s.x, y: s.y });
+              });
+            }
+            const origin = this.state.dragging.origins.get(selectedId);
+            if (origin) {
+              selectedShape.x = Math.round(origin.x + dx);
+              selectedShape.y = Math.round(origin.y + dy);
+            }
+          }
+          this.renderShape(selectedShape);
+        }
+      });
+      return; // Skip individual shape rendering below
     } else if (this.state.dragging.mode === 'draw') {
       if (shape.type === 'line') {
         const dx = point.x - this.state.dragging.start.x;
@@ -606,7 +1360,13 @@ class FigmaClone {
   }
 
   onMouseUp() {
+    if (this.state.isDrawing) {
+      this.finishDrawing();
+      return;
+    }
+    
     this.state.dragging.active = false;
+    this.state.dragging.origins = null; // Clear stored origins
   }
 
   onViewportWheel(e) {
@@ -819,6 +1579,9 @@ class FigmaClone {
     // Refresh effects and exports
     this.refreshEffects();
     
+    // Update stroke controls visibility
+    this.updateStrokeControls();
+    
     if (!shape) return;
     
     // Populate values
@@ -829,6 +1592,14 @@ class FigmaClone {
     if (this.inspectorInputs.fill) this.inspectorInputs.fill.value = this.toHex(shape.fill || '#000000');
     if (this.inspectorInputs.stroke) this.inspectorInputs.stroke.value = this.toHex(shape.stroke || '#000000');
     if (this.inspectorInputs.strokeW) this.inspectorInputs.strokeW.value = shape.strokeW || 0;
+    
+    // Update stroke swatch and hex input
+    if (this.strokeElements.swatch) {
+      this.strokeElements.swatch.style.backgroundColor = shape.stroke || '#000000';
+    }
+    if (this.strokeElements.hex) {
+      this.strokeElements.hex.value = (shape.stroke || '#000000').replace('#', '');
+    }
     if (this.inspectorInputs.radius) this.inspectorInputs.radius.value = shape.radius || 0;
     if (this.inspectorInputs.opacity) this.inspectorInputs.opacity.value = shape.opacity || 100;
     if (this.inspectorInputs.rotation) this.inspectorInputs.rotation.value = shape.rotation || 0;
@@ -881,16 +1652,50 @@ class FigmaClone {
         li.classList.add('selected');
       }
       
+      // Add visibility property if not exists
+      if (shape.visible === undefined) {
+        shape.visible = true;
+      }
+      
       li.innerHTML = `
         <div class="layer-content">
-          <span class="layer-icon">${this.getShapeIcon(shape.type)}</span>
-          <span class="layer-name">${shape.type.charAt(0).toUpperCase() + shape.type.slice(1)} ${shape.id}</span>
+          <div class="layer-info">
+            <span class="layer-icon">${this.getShapeIcon(shape.type)}</span>
+            <span class="layer-name">${shape.type.charAt(0).toUpperCase() + shape.type.slice(1)} ${shape.id}</span>
+          </div>
+          <button class="layer-visibility-btn" data-shape-id="${shape.id}" title="${shape.visible ? 'Hide' : 'Show'} element">
+            ${shape.visible ? icons.eyeOpenIcon : icons.eyeClosedIcon}
+          </button>
         </div>
       `;
       
-      li.addEventListener('click', () => this.selectOnly(shape.id));
+      // Add click event for layer info (selection)
+      const layerInfo = li.querySelector('.layer-info');
+      layerInfo.addEventListener('click', () => this.selectOnly(shape.id));
+      
+      // Add click event for visibility toggle
+      const visibilityBtn = li.querySelector('.layer-visibility-btn');
+      visibilityBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggleElementVisibility(shape.id);
+      });
+      
       this.elements.layersList.appendChild(li);
     });
+  }
+
+  toggleElementVisibility(shapeId) {
+    const shape = this.getShapeById(shapeId);
+    if (!shape) return;
+    
+    shape.visible = !shape.visible;
+    const element = document.getElementById(shapeId);
+    if (element) {
+      element.style.display = shape.visible ? 'block' : 'none';
+    }
+    
+    this.refreshLayers();
+    this.saveToLocalStorage();
   }
 
   getShapeIcon(type) {
@@ -905,6 +1710,7 @@ class FigmaClone {
       frame: '▦',
       group: '⬢',
       image: '🖼',
+      path: '✏️',
     };
     return icons[type] || '◯';
   }
@@ -1277,6 +2083,116 @@ class FigmaClone {
     ctx.fill();
   }
 
+  // Drawing Methods
+  startDrawing(point, tool) {
+    this.state.isDrawing = true;
+    this.state.currentPath = {
+      type: tool,
+      points: [point],
+      strokeW: tool === 'pen' ? 2 : 1,
+      stroke: '#000000',
+      fill: 'none',
+    };
+    
+    // Create temporary drawing element
+    const pathEl = document.createElement('div');
+    pathEl.id = 'current-path';
+    pathEl.className = 'drawing-path';
+    pathEl.style.position = 'absolute';
+    pathEl.style.pointerEvents = 'none';
+    pathEl.style.left = '0px';
+    pathEl.style.top = '0px';
+    pathEl.style.width = '100%';
+    pathEl.style.height = '100%';
+    
+    this.elements.stage.appendChild(pathEl);
+    this.updateDrawingPath();
+  }
+  
+  continueDrawing(point) {
+    if (!this.state.currentPath) return;
+    
+    // Add point to current path
+    this.state.currentPath.points.push(point);
+    this.updateDrawingPath();
+  }
+  
+  finishDrawing() {
+    if (!this.state.currentPath || this.state.currentPath.points.length < 2) {
+      this.cancelDrawing();
+      return;
+    }
+    
+    // Calculate bounding box
+    const points = this.state.currentPath.points;
+    const minX = Math.min(...points.map(p => p.x));
+    const minY = Math.min(...points.map(p => p.y));
+    const maxX = Math.max(...points.map(p => p.x));
+    const maxY = Math.max(...points.map(p => p.y));
+    
+    // Create path shape
+    const shape = {
+      type: 'path',
+      subtype: this.state.currentPath.type,
+      x: minX,
+      y: minY,
+      w: maxX - minX,
+      h: maxY - minY,
+      points: this.state.currentPath.points.map(p => ({
+        x: p.x - minX,
+        y: p.y - minY
+      })),
+      stroke: this.state.currentPath.stroke,
+      strokeW: this.state.currentPath.strokeW,
+      fill: 'none',
+      opacity: 100,
+      rotation: 0,
+      effects: [],
+      visible: true,
+    };
+    
+    this.addShape(shape);
+    this.selectOnly(shape.id);
+    this.cancelDrawing();
+  }
+  
+  cancelDrawing() {
+    this.state.isDrawing = false;
+    this.state.currentPath = null;
+    
+    const pathEl = document.getElementById('current-path');
+    if (pathEl) {
+      pathEl.remove();
+    }
+  }
+  
+  updateDrawingPath() {
+    const pathEl = document.getElementById('current-path');
+    if (!pathEl || !this.state.currentPath) return;
+    
+    const points = this.state.currentPath.points;
+    if (points.length < 2) return;
+    
+    // Create SVG path
+    let pathData = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 1; i < points.length; i++) {
+      pathData += ` L ${points[i].x} ${points[i].y}`;
+    }
+    
+    const strokeStyle = this.state.currentPath.subtype === 'pencil' ? 'round' : 'butt';
+    
+    pathEl.innerHTML = `
+      <svg width="100%" height="100%" style="position: absolute; top: 0; left: 0;">
+        <path d="${pathData}" 
+              stroke="${this.state.currentPath.stroke}" 
+              stroke-width="${this.state.currentPath.strokeW}"
+              stroke-linecap="${strokeStyle}"
+              stroke-linejoin="${strokeStyle}"
+              fill="none" />
+      </svg>
+    `;
+  }
+
   // Shape Creation Methods
   createTextShape(point) {
     const shape = {
@@ -1332,7 +2248,9 @@ class FigmaClone {
     el.style.left = comment.x + 'px';
     el.style.top = comment.y + 'px';
     el.innerHTML = `
-      <div class="comment-icon">💬</div>
+      <div class="comment-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-icon lucide-message-circle"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>
+      </div>
       <div class="comment-popup">
         <textarea placeholder="Add a comment..." class="comment-input">${comment.text || ''}</textarea>
         <div class="comment-actions">
@@ -1417,6 +2335,26 @@ class FigmaClone {
                fill="${shape.fill || '#000000'}" 
                stroke="${shape.stroke || '#000000'}" 
                stroke-width="${shape.strokeW || 0}" />
+    </svg>`;
+  }
+
+  createPathSVG(shape) {
+    if (!shape.points || shape.points.length < 2) return '';
+    
+    let pathData = `M ${shape.points[0].x} ${shape.points[0].y}`;
+    for (let i = 1; i < shape.points.length; i++) {
+      pathData += ` L ${shape.points[i].x} ${shape.points[i].y}`;
+    }
+    
+    const strokeStyle = shape.subtype === 'pencil' ? 'round' : 'butt';
+    
+    return `<svg width="100%" height="100%" viewBox="0 0 ${shape.w} ${shape.h}">
+      <path d="${pathData}" 
+            stroke="${shape.stroke || '#000000'}" 
+            stroke-width="${shape.strokeW || 2}"
+            stroke-linecap="${strokeStyle}"
+            stroke-linejoin="${strokeStyle}"
+            fill="none" />
     </svg>`;
   }
 
@@ -1518,6 +2456,20 @@ class FigmaClone {
         
         this.addShape(shape);
         this.selectOnly(shape.id);
+        
+        // Also add to assets library if not already there
+        if (!this.state.assets.find(asset => asset.src === shape.src)) {
+          const asset = {
+            id: this.uid(),
+            name: file.name,
+            src: shape.src,
+            size: file.size || 0,
+            type: file.type || 'image/*',
+            created: new Date().toISOString()
+          };
+          this.state.assets.push(asset);
+        }
+        
         this.saveToLocalStorage();
       };
       img.src = e.target.result;
@@ -1545,9 +2497,22 @@ class FigmaClone {
 
   // LocalStorage
   saveToLocalStorage() {
+    // Save current page data before saving to localStorage
+    if (this.state.currentPageId) {
+      const currentPage = this.state.pages.find(p => p.id === this.state.currentPageId);
+      if (currentPage) {
+        currentPage.shapes = [...this.state.shapes];
+        currentPage.comments = [...this.state.comments];
+      }
+    }
+
     const data = {
       shapes: this.state.shapes,
       comments: this.state.comments || [],
+      pages: this.state.pages || [],
+      currentPageId: this.state.currentPageId,
+      assets: this.state.assets || [],
+      activeTab: this.state.activeTab || 'file',
       timestamp: new Date().toISOString()
     };
     localStorage.setItem('figmaClone', JSON.stringify(data));
@@ -1558,14 +2523,53 @@ class FigmaClone {
       const data = localStorage.getItem('figmaClone');
       if (data) {
         const parsed = JSON.parse(data);
-        this.state.shapes = parsed.shapes || [];
-        this.state.comments = parsed.comments || [];
         
-        // Render all shapes
+        // Load pages and assets
+        this.state.pages = parsed.pages || [];
+        this.state.currentPageId = parsed.currentPageId;
+        this.state.assets = parsed.assets || [];
+        this.state.activeTab = parsed.activeTab || 'file';
+        
+        // If we have pages, load the current page
+        if (this.state.pages.length > 0 && this.state.currentPageId) {
+          const currentPage = this.state.pages.find(p => p.id === this.state.currentPageId);
+          if (currentPage) {
+            this.state.shapes = currentPage.shapes || [];
+            this.state.comments = currentPage.comments || [];
+          } else {
+            // If current page doesn't exist, switch to first page
+            this.state.currentPageId = this.state.pages[0].id;
+            const firstPage = this.state.pages[0];
+            this.state.shapes = firstPage.shapes || [];
+            this.state.comments = firstPage.comments || [];
+          }
+        } else {
+          // Legacy support - load old format
+          this.state.shapes = parsed.shapes || [];
+          this.state.comments = parsed.comments || [];
+          
+          // Create a default page if none exist
+          if (this.state.pages.length === 0) {
+            const defaultPage = {
+              id: this.uid(),
+              name: 'Page 1',
+              shapes: [...this.state.shapes],
+              comments: [...this.state.comments],
+              created: new Date().toISOString()
+            };
+            this.state.pages.push(defaultPage);
+            this.state.currentPageId = defaultPage.id;
+          }
+        }
+        
+        // Render all shapes and comments
         this.state.shapes.forEach(shape => this.renderShape(shape));
+        this.state.comments.forEach(comment => this.renderComment(comment));
         
-        // Render all comments
-        (this.state.comments || []).forEach(comment => this.renderComment(comment));
+        // Populate assets from existing image shapes if assets array is empty
+        if (this.state.assets.length === 0) {
+          this.populateAssetsFromImages();
+        }
         
         this.refreshLayers();
       } else {
@@ -1579,6 +2583,18 @@ class FigmaClone {
 
   // Sample Data
   loadSampleData() {
+    // Create default page
+    const defaultPage = {
+      id: this.uid(),
+      name: 'Page 1',
+      shapes: [],
+      comments: [],
+      created: new Date().toISOString()
+    };
+    
+    this.state.pages = [defaultPage];
+    this.state.currentPageId = defaultPage.id;
+    
     // Add a sample rectangle to demonstrate the system
     const sampleShape = {
       type: 'rectangle',
